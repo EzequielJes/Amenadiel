@@ -14,7 +14,7 @@ const iniciar = async(auth) => {
 
 	client.version = [2, 2143, 3]	
 
-	cient.on('qr', () => console.log('Escanee el codigo qr'))
+	client.on('qr', () => console.log('Escanee el codigo qr'))
 
 	
 
