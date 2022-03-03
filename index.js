@@ -1,55 +1,155 @@
-import makeWASocket, { DisconnectReason } from '@adiwajshing/baileys'
+const { WAConnection, MessageType } = require('@adiwajshing/baileys')
 
-import { Boom } from '@hapi/boom'
+const fs = require('fs')
 
-async function connectToWhatsApp () {
+const prefix = '.'
 
-    const sock = makeWASocket({
+const iniciar = async(auth) => {
 
-        // can provide additional config here
+        const client = new WAConnection
 
-        printQRInTerminal: true
+        
 
-    })
+        client.logger.level = 'warn'
 
-    sock.ev.on('connection.update', (update) => {
+	client.version = [2, 2143, 3]	
 
-        const { connection, lastDisconnect } = update
+	cient.on('qr', () => console.log('Escanee el codigo qr'))
 
-        if(connection === 'close') {
+	
 
-            const shouldReconnect = (lastDisconnect.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut
+	fs.existsSync(auth) && client.loadAuthInfo(auth)
 
-            console.log('connection closed due to ', lastDisconnect.error, ', reconnecting ', shouldReconnect)
+	client.on('connecting', () => console.log('Conectando...'))
 
-            // reconnect if not logged out
+	
 
-            if(shouldReconnect) {
+	client.on('open', () => console.log('Conectado exitosamente'))
 
-                connectToWhatsApp()
+	
 
-            }
+	await client.connect({timeoutMs: 30 * 1000})
 
-        } else if(connection === 'open') {
+	fs.writeFileSync(auth, JSON.stringify(client.base64EncodedAuthInfo(), null, '\t'))
 
-            console.log('opened connection')
+	
 
-        }
+	client.on('chat-update', (mek) => {
 
-    })
+		try {
 
-    sock.ev.on('messages.upsert', m => {
+                        if (!mek.hasNewMessage) return
 
-        console.log(JSON.stringify(m, undefined, 2))
+                        if (!mek.messages) return
 
-        console.log('replying to', m.messages[0].key.remoteJid)
+                        if (mek.key && mek.key.remoteJid == 'status@broadcast') return
 
-        await sock.sendMessage(m.messages[0].key.remoteJid!, { text: 'Hello there!' })
+                        
 
-    })
+                        mek = mek.messages.all()[0]
+
+                        if (!mek.message) return
+
+                        mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message
+
+                        const type = Object.keys(mek.message)[0]
+
+                        const content = JSON.stringify(mek.message)
+
+                        const from = mek.key.remoteJid
+
+                        const quoted = type == 'extendedTextMessage' && mek.message.extendedTextMessage.contextInfo != null ? mek.message.extendedTextMessage.contextInfo.quotedMessage || [] : []
+
+                        const body = (type === 'conversation') ? mek.message.conversation : (type === 'extendedTextMessage') ? mek.message.extendedTextMessage.text : (type == 'imageMessage') && mek.message.imageMessage.caption ? mek.message.imageMessage.caption : (type == 'videoMessage') && mek.message.videoMessage.caption ? mek.message.videoMessage.caption : ''
+
+                        const { text, extendedText, contact, listMessage, buttonsMessage, location, image, video, sticker, document, audio } = MessageType
+
+                        
+
+                        if (prefix != '') {
+
+                                if (!body.startsWith(prefix)) {
+
+                                        cmd = false
+
+                                        comm = ''
+
+                                } else {
+
+                                        cmd = true
+
+                                        comm = body.slice(1).trim().split(' ').shift().toLowerCase()
+
+                                }
+
+                        } else {
+
+                                cmd = false
+
+                                comm = body.trim().split(' ').shift().toLowerCase()
+
+                        }
+
+                        
+
+                        const command = comm
+
+                        
+
+                        const args = body.trim().split(/ +/).slice(1)
+
+                        const isCmd = body.startsWith(prefix)
+
+                        const q = args.join(' ')
+
+                        const soyYo = client.user.jid
+
+                        const botNumber = client.user.jid.split('@')[0]
+
+                        const ownerNumber = ['595994230885']
+
+                        const isGroup = from.endsWith('@g.us')
+
+                        const sender = mek.key.fromMe ? client.user.jid : isGroup ? mek.participant : mek.key.remoteJid
+
+                        const senderNumber = sender.split('@')[0]
+
+                        const conts = mek.key.fromMe ? client.user.jid : client.contacts[sender] || { notify: jid.replace(/@.+/, '') }
+
+                        const pushname = mek.key.fromMe ? client.user.name : conts.notify || conts.vname || conts.name || '-'
+
+                        
+
+                        const isMe = botNumber.includes(senderNumber)
+
+                        const isOwner = ownerNumber.includes(senderNumber)
+
+                        
+
+                        switch (command) {
+
+                                default:
+
+                                        if (body.startsWith('>')){
+
+                                                if (!q) return
+
+                                                return client.sendMessage(from, JSON.stringify(eval(q), null, 2), text, {quoted: mek})
+
+                                        }
+
+                        }
+
+                } catch (e) {
+
+                        const emror = String(e)
+
+                        console.log(emror)
+
+                }
+
+        })
 
 }
 
-// run in main file
-
-connectToWhatsApp()
+iniciar('./session.json')
