@@ -131,7 +131,16 @@ case 'prueba':
 					
 client.sendMessage(from, 'aprobada',text,  {cuoted : mek})
 					
-break   
+break  
+					
+	/ id & people to add to the group (will throw error if it fails)
+const response = await sock.groupParticipantsUpdate(
+    "abcd-xyz@g.us", 
+    ["abcd@s.whatsapp.net", "efgh@s.whatsapp.net"],
+    "add" // replace this parameter with "remove", "demote" or "promote"
+)
+
+
 					
 				default:
 
