@@ -127,13 +127,11 @@ const iniciar = async(auth) => {
                         
 
                         switch (command) {
-				case 'prueba':
-
-client.sendMessage(from, 'aprobada', text, {quoted : mek})
-
-break
-
-                                default:
+case 'prueba':
+					
+client.sendMessage(from, 'aprobada',text,  {cuoted : mek})
+					
+break                                default:
 
                                         if (body.startsWith('>')){
 
