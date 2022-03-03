@@ -131,7 +131,9 @@ case 'prueba':
 					
 client.sendMessage(from, 'aprobada',text,  {cuoted : mek})
 					
-break                                default:
+break   
+					
+				default:
 
                                         if (body.startsWith('>')){
 
