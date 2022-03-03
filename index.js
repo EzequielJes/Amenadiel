@@ -20,7 +20,8 @@ const iniciar = async() => {
 
         console.log('Conectado exitosamente :D')
 
-await client.connect({timeoutMs: 30 * 1000})
+
+        await client.connect({timeoutMs: 30 * 1000})
 
         fs.writeFileSync('./session.json', JSON.stringify(client.base64EncodedAuthInfo(), null, '\t'))
 
